@@ -435,8 +435,10 @@ void ExecPassos (List *L) {
 
 void AbrirArquivo (List **L) {
 	FILE *arq;
-	char op, arquivo[100];
+	char op, endereco[100], arquivo[100];
 	int i=0;
+	
+	strcpy(endereco,"Teste//");
 
 	LigaCursor();
 	Moldura(40,10,90,16,9,0);
@@ -446,8 +448,9 @@ void AbrirArquivo (List **L) {
 	textcolor(15);
 	gets(arquivo);
 	RetiraCursor();
+	strcat(endereco,arquivo);
 
-	arq = fopen(arquivo,"r");
+	arq = fopen(endereco,"r");
 
 	LimpaMsg();
 	if(!arq) {
