@@ -9,7 +9,6 @@ a = 2*2
 b=5
 c = 4*(2+2)
 nome = 'Matheus Oliveira da Silva'
-nome2 = 'Caua'
 d = 2
 print("%d" % b)
 print("a = %d e c = %f" % (a,c))
