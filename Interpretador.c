@@ -9,10 +9,9 @@
 #include "Headers\\PilhaVar.h"
 #include "Headers\\Moldura.h"
 #include "Headers\\Funcoes.h"
-#include "Headers\\TADListaGen.h"
-#include "Headers\\TadListaGenContas.h"
+#include "Headers\\TadListaGen.h"
 
-void ExibirPrograma(List *L, int LinhaAtual) {
+void ExibirPrograma(Lista *L, int LinhaAtual) {
 	int l=10, c=6;
 
 	while(L) {
@@ -22,9 +21,9 @@ void ExibirPrograma(List *L, int LinhaAtual) {
 		}
 		LimpaLinha(l);
 		gotoxy(c,l);
-		while(!strcmp(L->pToken->tokenName,"fimdef") || !strcmp(L->pToken->tokenName,"fim"))
+		while(!strcmp(L->pToken->NomeToken,"fimdef") || !strcmp(L->pToken->NomeToken,"fim"))
 			L = L->prox;
-		printf("%s",L->pToken->tokenText);
+		printf("%s",L->pToken->TextoToken);
 		textbackground(0);
 		textcolor(15);
 		l++;
@@ -32,16 +31,16 @@ void ExibirPrograma(List *L, int LinhaAtual) {
 	}
 }
 
-void ConteudoArquivo(List *L) {
+void ConteudoArquivo(Lista *L) {
 	char linha[100];
 	int l=10, c=6;
 
 	while(L) {
 		gotoxy(c,l);
 
-		while(!strcmp(L->pToken->tokenName,"fimdef") || !strcmp(L->pToken->tokenName,"fim"))
+		while(!strcmp(L->pToken->NomeToken,"fimdef") || !strcmp(L->pToken->NomeToken,"fim"))
 			L = L->prox;
-		printf("%s",L->pToken->tokenText);
+		printf("%s",L->pToken->TextoToken);
 		l++;
 		L = L->prox;
 	}
@@ -57,7 +56,7 @@ void DestroiLinha(Token **Token) {
 }
 
 // Algoritmo recursivo para destruir os elementos da lista
-void DestroiLista(List **L) {
+void DestroiLista(Lista **L) {
 	if(*L) {
 		DestroiLinha(&(*L)->pToken);
 		DestroiLista(&(*L)->prox);
@@ -66,18 +65,18 @@ void DestroiLista(List **L) {
 	}
 }
 
-int PonteiroInicial (List **L) {
-	List *aux;
+int PonteiroInicial (Lista **L) {
+	Lista *aux;
 	int Linha=0, contLinha=0;
 
 	aux = *L;
 	while(aux) {
-		if(!strcmp(aux->pToken->tokenName,"fimdef")) {
+		if(!strcmp(aux->pToken->NomeToken,"fimdef")) {
 			*L = aux;
 			Linha += contLinha;
 			contLinha = 0;
 		}
-		if(strcmp(aux->pToken->tokenName,"fimdef") && strcmp(aux->pToken->tokenName,"fim"))
+		if(strcmp(aux->pToken->NomeToken,"fimdef") && strcmp(aux->pToken->NomeToken,"fim"))
 			contLinha++;
 		aux = aux->prox;
 	}
@@ -94,13 +93,13 @@ void Executa(Token *Tok, Pilha **pVar, Funcoes *Funcoes) {
 		case 1://caso for variavel ja definida
 			P=*pVar;
 			if(Tok->prox)
-				if(!strcmp(Tok->prox->tokenName,"=")) {
-					if(Tok->prox->prox->tokenName[0]>='0' && Tok->prox->prox->tokenName[0]<='9') {
-						while(P && strcmp(P->conteudo.nomeVar,Tok->tokenName))
+				if(!strcmp(Tok->prox->NomeToken,"=")) {
+					if(Tok->prox->prox->NomeToken[0]>='0' && Tok->prox->prox->NomeToken[0]<='9') {
+						while(P && strcmp(P->conteudo.nomeVar,Tok->NomeToken))
 							P = P->prox;
 						T = Tok->prox->prox;
 						while(T) {
-							strcat(expressao,T->tokenName);
+							strcat(expressao,T->NomeToken);
 							T = T->prox;
 						}
 
@@ -110,11 +109,11 @@ void Executa(Token *Tok, Pilha **pVar, Funcoes *Funcoes) {
 						P->conteudo.val.flag = 4;
 						strcpy(string,"");
 						Tok = Tok->prox->prox->prox;
-						strcat(string,Tok->tokenName);
+						strcat(string,Tok->NomeToken);
 						Tok = Tok->prox;
-						while(Tok && (Tok->tokenName[0]!=39 && Tok->tokenName[0]!=34)) {
+						while(Tok && (Tok->NomeToken[0]!=39 && Tok->NomeToken[0]!=34)) {
 							strcat(string," ");
-							strcat(string,Tok->tokenName);
+							strcat(string,Tok->NomeToken);
 							Tok = Tok->prox;
 						}
 						strcpy(P->conteudo.val.variavel.str,string);
@@ -124,13 +123,13 @@ void Executa(Token *Tok, Pilha **pVar, Funcoes *Funcoes) {
 		case 2://caso for função do cabra
 			break;
 		case 3://caso função do sistema
-			if(strcmp(Tok->tokenName,"if")==0)
+			if(strcmp(Tok->NomeToken,"if")==0)
 				resolveIf(Tok,pVar);
-			if(strcmp(Tok->tokenName,"while")==0)
+			if(strcmp(Tok->NomeToken,"while")==0)
 				break;
-			if(strcmp(Tok->tokenName,"for")==0)
+			if(strcmp(Tok->NomeToken,"for")==0)
 				break;
-			if(strcmp(Tok->tokenName,"do")==0)
+			if(strcmp(Tok->NomeToken,"do")==0)
 				break;
 			break;
 		case 5: //implementação futura
@@ -138,16 +137,16 @@ void Executa(Token *Tok, Pilha **pVar, Funcoes *Funcoes) {
 		case 0://definição de função
 			break;
 		default: //se nao achou nada, então só pode ser criação de uma nova variavel
-			createNewVar(Tok->tokenName,&(*pVar));
+			CriaVariavel(Tok->NomeToken,&(*pVar));
 			P=*pVar;
 			if(Tok->prox!=NULL)
-				if(strcmp(Tok->prox->tokenName,"=")==0) {
-					if(Tok->prox->prox->tokenName[0]>='0' && Tok->prox->prox->tokenName[0]<='9') {
-						while(P && strcmp(P->conteudo.nomeVar,Tok->tokenName))
+				if(strcmp(Tok->prox->NomeToken,"=")==0) {
+					if(Tok->prox->prox->NomeToken[0]>='0' && Tok->prox->prox->NomeToken[0]<='9') {
+						while(P && strcmp(P->conteudo.nomeVar,Tok->NomeToken))
 							P = P->prox;
 						T = Tok->prox->prox;
 						while(T) {
-							strcat(expressao,T->tokenName);
+							strcat(expressao,T->NomeToken);
 							T = T->prox;
 						}
 
@@ -157,11 +156,11 @@ void Executa(Token *Tok, Pilha **pVar, Funcoes *Funcoes) {
 						P->conteudo.val.flag = 4;
 						strcpy(string,"");
 						Tok = Tok->prox->prox->prox;
-						strcat(string,Tok->tokenName);
+						strcat(string,Tok->NomeToken);
 						Tok = Tok->prox;
-						while(Tok && (Tok->tokenName[0]!=39 && Tok->tokenName[0]!=34)) {
+						while(Tok && (Tok->NomeToken[0]!=39 && Tok->NomeToken[0]!=34)) {
 							strcat(string," ");
-							strcat(string,Tok->tokenName);
+							strcat(string,Tok->NomeToken);
 							Tok = Tok->prox;
 						}
 						strcpy(P->conteudo.val.variavel.str,string);
@@ -230,7 +229,7 @@ Valor BuscaVariavel (Token *Var, Pilha *Pilha) {
 	Valor ValorVar;
 	ValorVar.flag = -1;
 	while(Pilha && ValorVar.flag == -1) {
-		if(!strcmp(Var->tokenName,Pilha->conteudo.nomeVar)) {
+		if(!strcmp(Var->NomeToken,Pilha->conteudo.nomeVar)) {
 			ValorVar.flag = Pilha->conteudo.val.flag;
 			ValorVar.variavel = Pilha->conteudo.val.variavel;
 		}
@@ -247,28 +246,28 @@ void ExibirPrint(Token *token, Pilha *pilhaVar) {
 	val.flag = -1;
 	strcpy(string,"");
 
-	if(strcmp(token->tokenName,"print"))
+	if(strcmp(token->NomeToken,"print"))
 		EscrMsg("A LINHA NAO CONTEM FUNCAO PRINT");
 	else {
 		token = token->prox;
-		if(token->tokenName[0] == '(') {
+		if(token->NomeToken[0] == '(') {
 			token = token->prox;
-			if(token->tokenName[0] == 34 || token->tokenName[0] == 39) {
+			if(token->NomeToken[0] == 34 || token->NomeToken[0] == 39) {
 				token = token->prox;
-				while(token && (token->tokenName[0]!=34 && token->tokenName[0]!=39)) {
-					if(strcmp(token->tokenName,"%d") && strcmp(token->tokenName,"%f") && strcmp(token->tokenName,"%c") && strcmp(token->tokenName,"%s")) {
+				while(token && (token->NomeToken[0]!=34 && token->NomeToken[0]!=39)) {
+					if(strcmp(token->NomeToken,"%d") && strcmp(token->NomeToken,"%f") && strcmp(token->NomeToken,"%c") && strcmp(token->NomeToken,"%s")) {
 						// Se não for uma máscara ele deve concatenar com a string a ser apresentada
 						strcpy(aux," ");
-						strcat(aux,token->tokenName);
+						strcat(aux,token->NomeToken);
 						strcat(string,aux);
 					} else {
 						// Caso encontre uma máscara ele deve procurar a variável e verificar sua existência.
 						mascara = 1;
 						if(val.flag == -1) {
 							var = token;
-							while(var && strcmp(var->tokenName,"%"))
+							while(var && strcmp(var->NomeToken,"%"))
 								var = var->prox;
-							if(var->prox->tokenName[0] == '(')
+							if(var->prox->NomeToken[0] == '(')
 								var = var->prox;
 							var = var->prox;
 							val = BuscaVariavel(var,pilhaVar);
@@ -277,7 +276,7 @@ void ExibirPrint(Token *token, Pilha *pilhaVar) {
 							val = BuscaVariavel(var,pilhaVar);
 						}
 						if(val.flag != -1) {
-							switch(token->tokenName[1]) {
+							switch(token->NomeToken[1]) {
 								case 'd': // Int
 									sprintf(valor," %.0f",val.variavel.fl);
 									break;
@@ -301,10 +300,10 @@ void ExibirPrint(Token *token, Pilha *pilhaVar) {
 				}
 				if(!mascara) {
 					var = token;
-					while(var && (var->tokenName[0] != 34 && var->tokenName[0] != 39))
+					while(var && (var->NomeToken[0] != 34 && var->NomeToken[0] != 39))
 						var = var->prox;
-					while(var && var->tokenName[0] != ')') {
-						if(var->tokenName[0] != ',' || var->tokenName[0] != '+') {
+					while(var && var->NomeToken[0] != ')') {
+						if(var->NomeToken[0] != ',' || var->NomeToken[0] != '+') {
 							val = BuscaVariavel(var,pilhaVar);
 							if(val.flag != -1) {
 								if(val.flag == 1)
@@ -321,8 +320,8 @@ void ExibirPrint(Token *token, Pilha *pilhaVar) {
 				}
 			} else {
 				var = token;
-				while(var && var->tokenName[0] != ')') {
-					if(var->tokenName[0] != ',' || var->tokenName[0] != '+') {
+				while(var && var->NomeToken[0] != ')') {
+					if(var->NomeToken[0] != ',' || var->NomeToken[0] != '+') {
 						val = BuscaVariavel(var,pilhaVar);
 						if(val.flag != -1) {
 							if(val.flag == 1)
@@ -345,20 +344,19 @@ void ExibirPrint(Token *token, Pilha *pilhaVar) {
 			gotoxy(22,14);
 			printf("%s",string);
 			textcolor(15);
-			getch();
 		}
 	}
 }
 
-void ExecPassos (List *L) {
+void ExecPassos (Lista *L) {
 	char op;
 	int LinhaAtual = 0;
 	Token *ant = NULL;
-	List *Linhas = L;
+	Lista *Linhas = L;
 	Pilha *pilhaDeVariaveis = NULL; // Definindo a pilha de variaveis vazia
-	Funcoes *functions;
+	Funcoes *Funcoes;
 
-	createFunctionsList(&functions,L);// Listando todas as funcoes da lista
+	CriaListaFuncao(&Funcoes,L);// Listando todas as funcoes da lista
 	LinhaAtual = PonteiroInicial(&L);
 
 	LimpaTela();
@@ -370,7 +368,7 @@ void ExecPassos (List *L) {
 		LimpaMsg();
 		EscrMsg((char*)"[ENTER] - PROXIMA LINHA, [F9] - CONTEUDO MEM. RAM, [F10] - EXIBIR RESULTADOS OU [ESC] PARA VOLTAR");
 
-		Executa(L->pToken,&pilhaDeVariaveis,functions);// Executa a linha e atualiza a pilha de variáveis com resultados.
+		Executa(L->pToken,&pilhaDeVariaveis,Funcoes);// Executa a linha e atualiza a pilha de variáveis com resultados.
 
 		op = getch();
 
@@ -386,7 +384,6 @@ void ExecPassos (List *L) {
 					case 68:
 						LimpaMsg();
 						ExibirPrint(L->pToken,pilhaDeVariaveis);
-						EscrMsg((char*)"EXIBICAO DOS RESULTADOS");
 				}
 				getch();
 				break;
@@ -395,35 +392,35 @@ void ExecPassos (List *L) {
 					L = L->prox;
 					LinhaAtual++;
 					// Tokens que não são Linhas de Código.
-					if(!strcmp(L->pToken->tokenName,"fimdef") || !strcmp(L->pToken->tokenName,"fim"))
+					if(!strcmp(L->pToken->NomeToken,"fimdef") || !strcmp(L->pToken->NomeToken,"fim"))
 						L = L->prox;
-					if(!strcmp(L->pToken->tokenName,"if")) {
+					if(!strcmp(L->pToken->NomeToken,"if")) {
 						if(resolveIf(L->pToken,pilhaDeVariaveis) == 1) {
 							ant = L->pToken;
 							L = L->prox;
 							LinhaAtual++;
 						} else {
-							while(L && strcmp(L->pToken->tokenName,"fim")) {
+							while(L && strcmp(L->pToken->NomeToken,"fim")) {
 								L = L->prox;
 								LinhaAtual++;
 							}
-							if(!strcmp(L->pToken->tokenName,"fim")) {
+							if(!strcmp(L->pToken->NomeToken,"fim")) {
 								L = L->prox;
-								if(!strcmp(L->pToken->tokenName,"else")) {
+								if(!strcmp(L->pToken->NomeToken,"else")) {
 									L = L->prox;
 									LinhaAtual++;
 								}
 							}
 						}
 					}
-					if(!strcmp(L->pToken->tokenName,"else")) {
+					if(!strcmp(L->pToken->NomeToken,"else")) {
 						if(ant) {
 							ant = NULL;
-							while(L && strcmp(L->pToken->tokenName,"fim")) {
+							while(L && strcmp(L->pToken->NomeToken,"fim")) {
 								L = L->prox;
 								LinhaAtual++;
 							}
-							if(!strcmp(L->pToken->tokenName,"fim"))
+							if(!strcmp(L->pToken->NomeToken,"fim"))
 								L = L->prox;
 						}
 					}
@@ -433,7 +430,7 @@ void ExecPassos (List *L) {
 	} while(op!=27);
 }
 
-void AbrirArquivo (List **L) {
+void AbrirArquivo (Lista **L) {
 	FILE *arq;
 	char op, endereco[100], arquivo[100];
 	int i=0;
@@ -461,7 +458,7 @@ void AbrirArquivo (List **L) {
 		printf("ARQUIVO %s ABERTO COM SUCESSO, PRESSIONE QUALQUER TECLA", arquivo);
 		getch();
 
-		createListOfLines(arq, &(*L)); // Cria a lista de linhas do arquivo .py.
+		CriaListaTokens(arq, &(*L)); // Cria a lista de linhas do arquivo .py.
 		fclose(arq); //Fecha o arquivo e a partir daqui trabalha apenas com ponteiros.
 
 		if(!L)
@@ -508,7 +505,7 @@ void Menu (void) {
 }
 
 int main(void) {
-	List *L = NULL;
+	Lista *L = NULL;
 	char op;
 
 	SetConsoleTitle("Interpretador Python");

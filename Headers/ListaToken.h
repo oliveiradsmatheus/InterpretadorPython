@@ -1,17 +1,17 @@
 //Linhas de execução
 struct token {
-	char tokenName[45], tokenText[100];
+	char NomeToken[45], TextoToken[100];
 	struct token *prox;
 };
 typedef struct token Token;
 
-struct list {
+struct lista {
 	Token *pToken;
-	struct list *prox, *ant;
+	struct lista *prox, *ant;
 };
-typedef struct list List;
+typedef struct lista Lista;
 
-void createTokens(Token **pTokens, char string[100]) {
+void CriaTokens(Token **pTokens, char string[100]) {
 	int i = 0, j = 0;
 	char aux[100];
 	Token *fim;
@@ -31,13 +31,13 @@ void createTokens(Token **pTokens, char string[100]) {
 				*pTokens = (Token *) malloc(sizeof(Token));
 				(*pTokens)->prox = NULL;
 				if(strcmp(string,"fim") || strcmp(string,"fimdef"))
-					strcpy((*pTokens)->tokenText,string);
-				strcpy((*pTokens)->tokenName, aux);
+					strcpy((*pTokens)->TextoToken,string);
+				strcpy((*pTokens)->NomeToken, aux);
 				fim = *pTokens;
 			} else {
 				fim->prox = (Token *) malloc(sizeof(Token));
 				fim->prox->prox = NULL;
-				strcpy(fim->prox->tokenName, aux);
+				strcpy(fim->prox->NomeToken, aux);
 				fim = fim->prox;
 			}
 
@@ -47,16 +47,16 @@ void createTokens(Token **pTokens, char string[100]) {
 			fim->prox = (Token*)malloc(sizeof(Token));
 			fim->prox->prox = NULL;
 			if(strcmp(string,"fim") || strcmp(string,"fimdef"))
-				strcpy((*pTokens)->tokenText,string);
-			strcpy(fim->prox->tokenName, aux);
+				strcpy((*pTokens)->TextoToken,string);
+			strcpy(fim->prox->NomeToken, aux);
 			fim = fim->prox;
 		}
 		i++;
 	}
 }
 
-void createListOfLines(FILE *arq, List **L) {
-	List *Aux, *Nova;
+void CriaListaTokens(FILE *arq, Lista **L) {
+	Lista *Aux, *Nova;
 	int idenAnt=0, idenAtu=0, i;
 	char string[100], def=0, func=0;
 
@@ -81,10 +81,10 @@ void createListOfLines(FILE *arq, List **L) {
 						func = (idenAnt-idenAtu)/3 - 1; // Menos um porque o último é o fimdef
 					
 				while(func) {
-					Nova = (List*)malloc(sizeof(List));
+					Nova = (Lista*)malloc(sizeof(Lista));
 					Nova->prox = NULL;
 					Nova->ant = NULL;
-					createTokens(&Nova->pToken,"fim");
+					CriaTokens(&Nova->pToken,"fim");
 					if(!L)
 						*L = Nova;
 					else {
@@ -97,10 +97,10 @@ void createListOfLines(FILE *arq, List **L) {
 					func--;
 				}
 				if(def && !idenAtu) {
-					Nova = (List*)malloc(sizeof(List));
+					Nova = (Lista*)malloc(sizeof(Lista));
 					Nova->prox = NULL;
 					Nova->ant = NULL;
-					createTokens(&Nova->pToken,"fimdef");
+					CriaTokens(&Nova->pToken,"fimdef");
 					if(!L)
 						*L = Nova;
 					else {
@@ -113,10 +113,10 @@ void createListOfLines(FILE *arq, List **L) {
 					def--;
 				}
 			}
-			Nova = (List*)malloc(sizeof(List));
+			Nova = (Lista*)malloc(sizeof(Lista));
 			Nova->prox = NULL;
 			Nova->ant = NULL;
-			createTokens(&Nova->pToken,string);
+			CriaTokens(&Nova->pToken,string);
 			if(!(*L))
 				*L = Nova;
 			else {
@@ -132,7 +132,7 @@ void createListOfLines(FILE *arq, List **L) {
 }
 
 // Função de Exibição dos Tokens para testes
-void exibe(List *l) {
+void exibe(Lista *l) {
 	int i = 0;
 	int j = 0;
 	Token *p;
@@ -147,7 +147,7 @@ void exibe(List *l) {
 		p = l->pToken;
 		j = 1;
 		while (p != NULL) {
-			printf("\n %d.%d %s ", i, j++, p->tokenName);
+			printf("\n %d.%d %s ", i, j++, p->NomeToken);
 			p = p->prox;
 		}
 		i++;

@@ -5,7 +5,7 @@ union vari {
 	double db; //flag = 2
 	char ch; //flag = 3
 	char str[100]; //flag = 4
-	List *pont; //flag = 5
+	Lista *pont; //flag = 5
 	//CASO A FLAG SEJA 6 SIGNIFICA QUE AINDA NAO POSSUI VALOR ATRIBUIDO
 };
 
@@ -27,7 +27,7 @@ struct pilha {
 };
 typedef struct pilha Pilha;
 
-void createNewVar(char nome[45],Pilha **P) {
+void CriaVariavel(char nome[45],Pilha **P) {
 	Pilha *aux = (Pilha*)malloc(sizeof(Pilha));
 	aux->prox = *P;
 	aux->ant = NULL;
