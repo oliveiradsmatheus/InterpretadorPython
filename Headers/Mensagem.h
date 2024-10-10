@@ -1,7 +1,7 @@
 void EscrMsg (char mensagem[]) {
 	gotoxy(3,43);
 	textcolor(12);
-	printf("Mensagem: ");
+	printf("MENSAGEM: ");
 	textcolor(15);
 	printf("%s",mensagem);
 }

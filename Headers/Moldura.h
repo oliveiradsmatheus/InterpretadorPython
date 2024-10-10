@@ -79,7 +79,7 @@ void LigaCursor (void) {
 }
 
 void Dimensao (void) {
-	system("mode con cols=120 lines=45");
+	system("mode con cols=120 lines=145");
 }
 
 void Fundo (int Cor) {
@@ -133,7 +133,6 @@ void LimpaTelaInteira(void) {
 void MolduraCompleta (void) {
 	Moldura(1,1,120,45,9,0); // Moldura Externa
 	Moldura(2,2,119,4,9,0); // Moldura do Titulo
-	//Moldura(2,5,30,41,9,0); // Moldura Lateral (Não precisa de Menu)
 	Moldura(2,5,119,41,9,0); // Moldura Central
 	Moldura(2,42,119,44,9,0); // Moldura da Mensagem Inferior
 }

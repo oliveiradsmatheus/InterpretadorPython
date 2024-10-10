@@ -5,9 +5,9 @@
 #include <conio2.h>
 #include <windows.h>
 #include "Headers\\Mensagem.h"
+#include "Headers\\Moldura.h"
 #include "Headers\\ListaToken.h"
 #include "Headers\\PilhaVar.h"
-#include "Headers\\Moldura.h"
 #include "Headers\\Funcoes.h"
 #include "Headers\\TadListaGen.h"
 
@@ -104,7 +104,7 @@ void Executa(Token *Tok, Pilha **pVar, Funcoes *Funcoes) {
 						}
 
 						P->conteudo.val.flag = 1;
-						P->conteudo.val.variavel.fl=resolveExpressao(expressao);
+						P->conteudo.val.variavel.fl = resolveExpressao(expressao);
 					} else {
 						P->conteudo.val.flag = 4;
 						strcpy(string,"");
@@ -123,8 +123,8 @@ void Executa(Token *Tok, Pilha **pVar, Funcoes *Funcoes) {
 		case 2://caso for função do cabra
 			break;
 		case 3://caso função do sistema
-			if(strcmp(Tok->NomeToken,"if")==0)
-				resolveIf(Tok,pVar);
+			/*if(strcmp(Tok->NomeToken,"if")==0)
+				ComparaIf(Tok,*pVar);*/
 			if(strcmp(Tok->NomeToken,"while")==0)
 				break;
 			if(strcmp(Tok->NomeToken,"for")==0)
@@ -136,7 +136,7 @@ void Executa(Token *Tok, Pilha **pVar, Funcoes *Funcoes) {
 			break;
 		case 0://definição de função
 			break;
-		default: //se nao achou nada, então só pode ser criação de uma nova variavel
+		default: // Criação de variável
 			CriaVariavel(Tok->NomeToken,&(*pVar));
 			P=*pVar;
 			if(Tok->prox!=NULL)
@@ -223,19 +223,6 @@ void ExibirPilhaVar (Pilha *P) {
 		end += 4;
 		P = P->ant;
 	}
-}
-
-Valor BuscaVariavel (Token *Var, Pilha *Pilha) {
-	Valor ValorVar;
-	ValorVar.flag = -1;
-	while(Pilha && ValorVar.flag == -1) {
-		if(!strcmp(Var->NomeToken,Pilha->conteudo.nomeVar)) {
-			ValorVar.flag = Pilha->conteudo.val.flag;
-			ValorVar.variavel = Pilha->conteudo.val.variavel;
-		}
-		Pilha = Pilha->prox;
-	}
-	return ValorVar;
 }
 
 void ExibirPrint(Token *token, Pilha *pilhaVar) {
@@ -348,12 +335,90 @@ void ExibirPrint(Token *token, Pilha *pilhaVar) {
 	}
 }
 
+void ResolveElse (Lista **L, int *LinhaAtual, char *repeticao) {
+	if(*repeticao) {
+		*repeticao = 0;
+		while(*L && strcmp((*L)->pToken->NomeToken,"fim")) {
+			*L = (*L)->prox;
+			(*LinhaAtual)++;
+		}
+		if(!strcmp((*L)->pToken->NomeToken,"fim"))
+			*L = (*L)->prox;
+	}
+}
+
+void ResolveElif (Lista **L, Pilha *PilhaVar, char *repeticao, int *LinhaAtual) {
+	if(*repeticao) {
+		if(ComparaIf((*L)->pToken,PilhaVar)) {
+			*repeticao = 1;
+			*L = (*L)->prox;
+			(*LinhaAtual)++;
+		} else {
+			while(*L && strcmp((*L)->pToken->NomeToken,"fim")) {
+				*L = (*L)->prox;
+				(*LinhaAtual)++;
+			}
+			if(!strcmp((*L)->pToken->NomeToken,"fim")) {
+				*L = (*L)->prox;
+				if(!strcmp((*L)->pToken->NomeToken,"elif")) {
+					printf("ENTROU NO ELIF");
+					getch();
+					ResolveElif(&(*L),PilhaVar,&(*repeticao),&(*LinhaAtual));
+					//*L = (*L)->prox;
+					//(*LinhaAtual)++;
+				} else {
+					if(!strcmp((*L)->pToken->NomeToken,"else")) {
+						printf("ENTROU NO ELSE");
+						getch();
+						*repeticao = 0;
+						*L = (*L)->prox;
+						(*LinhaAtual)++;
+						//ResolveElse(&(*L),&(*LinhaAtual),&(*repeticao));
+					}
+				}
+			}
+		}
+	}
+}
+
+void ResolveIf (Lista **L, Pilha *PilhaVar, char *repeticao, int *LinhaAtual) {
+	*repeticao = 1;
+	if(ComparaIf((*L)->pToken,PilhaVar)) {
+		*L = (*L)->prox;
+		(*LinhaAtual)++;
+	} else {
+		while(*L && strcmp((*L)->pToken->NomeToken,"fim")) {
+			*L = (*L)->prox;
+			(*LinhaAtual)++;
+		}
+		if(!strcmp((*L)->pToken->NomeToken,"fim")) {
+			*L = (*L)->prox;
+			if(!strcmp((*L)->pToken->NomeToken,"elif")) {
+				printf("ENTROU NO ELIF");
+				getch();
+				ResolveElif(&(*L),PilhaVar,&(*repeticao),&(*LinhaAtual));
+				//*L = (*L)->prox;
+				//(*LinhaAtual)++;
+			} else {
+				if(!strcmp((*L)->pToken->NomeToken,"else")) {
+					printf("ENTROU NO ELSE");
+					getch();
+					*repeticao = 0;
+					*L = (*L)->prox;
+					(*LinhaAtual)++;
+					//ResolveElse(&(*L),&(*LinhaAtual),&(*repeticao));
+				}
+			}
+		}
+	}
+}
+
 void ExecPassos (Lista *L) {
-	char op;
+	char op, repeticao = 0;
 	int LinhaAtual = 0;
-	Token *ant = NULL;
+	Token *Aux;
 	Lista *Linhas = L;
-	Pilha *pilhaDeVariaveis = NULL; // Definindo a pilha de variaveis vazia
+	Pilha *PilhaVar = NULL; // Definindo a pilha de variaveis vazia
 	Funcoes *Funcoes;
 
 	CriaListaFuncao(&Funcoes,L);// Listando todas as funcoes da lista
@@ -363,13 +428,27 @@ void ExecPassos (Lista *L) {
 	ExibirTexto((char*)"EXECUCAO DO PROGRAMA:",6,8,14);
 
 	do {
+		/*if(!strcmp(L->pToken->NomeToken,"else"))
+			ResolveElse(&L,&LinhaAtual,&repeticao);
+		if(!strcmp(L->pToken->NomeToken,"elif"))
+			ResolveElif(&L,PilhaVar,&repeticao,&LinhaAtual);
+		if(repeticao)
+			repeticao = 0;*/
+		if(!strcmp(L->pToken->NomeToken,"if"))
+			ResolveIf(&L,PilhaVar,&repeticao,&LinhaAtual);
+		if(!strcmp(L->pToken->NomeToken,"for")) {
+		}
+		if(!strcmp(L->pToken->NomeToken,"while")) {
+
+		}
+
 		LimpaTela();
 		ExibirPrograma(Linhas,LinhaAtual); // Exibe o conteúdo do arquivo com efeito na linha atual .py
 		LimpaMsg();
 		EscrMsg((char*)"[ENTER] - PROXIMA LINHA, [F9] - CONTEUDO MEM. RAM, [F10] - EXIBIR RESULTADOS OU [ESC] PARA VOLTAR");
 
-		Executa(L->pToken,&pilhaDeVariaveis,Funcoes);// Executa a linha e atualiza a pilha de variáveis com resultados.
-
+		Executa(L->pToken,&PilhaVar,Funcoes);// Executa a linha e atualiza a pilha de variáveis com resultados.
+		EscrMsg("");
 		op = getch();
 
 		switch(op) {
@@ -378,12 +457,12 @@ void ExecPassos (Lista *L) {
 				switch(op) {
 					case 67:
 						LimpaMsg();
-						ExibirPilhaVar(pilhaDeVariaveis);
+						ExibirPilhaVar(PilhaVar);
 						EscrMsg((char*)"CONTEUDO DA MEMORIA RAM");
 						break;
 					case 68:
 						LimpaMsg();
-						ExibirPrint(L->pToken,pilhaDeVariaveis);
+						ExibirPrint(L->pToken, PilhaVar);
 				}
 				getch();
 				break;
@@ -394,36 +473,6 @@ void ExecPassos (Lista *L) {
 					// Tokens que não são Linhas de Código.
 					if(!strcmp(L->pToken->NomeToken,"fimdef") || !strcmp(L->pToken->NomeToken,"fim"))
 						L = L->prox;
-					if(!strcmp(L->pToken->NomeToken,"if")) {
-						if(resolveIf(L->pToken,pilhaDeVariaveis) == 1) {
-							ant = L->pToken;
-							L = L->prox;
-							LinhaAtual++;
-						} else {
-							while(L && strcmp(L->pToken->NomeToken,"fim")) {
-								L = L->prox;
-								LinhaAtual++;
-							}
-							if(!strcmp(L->pToken->NomeToken,"fim")) {
-								L = L->prox;
-								if(!strcmp(L->pToken->NomeToken,"else")) {
-									L = L->prox;
-									LinhaAtual++;
-								}
-							}
-						}
-					}
-					if(!strcmp(L->pToken->NomeToken,"else")) {
-						if(ant) {
-							ant = NULL;
-							while(L && strcmp(L->pToken->NomeToken,"fim")) {
-								L = L->prox;
-								LinhaAtual++;
-							}
-							if(!strcmp(L->pToken->NomeToken,"fim"))
-								L = L->prox;
-						}
-					}
 				} else
 					op=27;
 		}
@@ -434,17 +483,18 @@ void AbrirArquivo (Lista **L) {
 	FILE *arq;
 	char op, endereco[100], arquivo[100];
 	int i=0;
-	
+
 	strcpy(endereco,"Teste//");
 
-	LigaCursor();
+	/*LigaCursor();
 	Moldura(40,10,90,16,9,0);
 	Moldura(41,11,89,13,9,0);
 	ExibirTexto((char*)"DIGITE O NOME DO ARQUIVO",53,12,14);
 	ExibirTexto((char*)"~ ",42,14,12);
 	textcolor(15);
 	gets(arquivo);
-	RetiraCursor();
+	RetiraCursor();*/
+	strcpy(arquivo,"teste2.py");
 	strcat(endereco,arquivo);
 
 	arq = fopen(endereco,"r");
@@ -462,7 +512,7 @@ void AbrirArquivo (Lista **L) {
 		fclose(arq); //Fecha o arquivo e a partir daqui trabalha apenas com ponteiros.
 
 		if(!L)
-			EscrMsg((char*)"ERRO! ARQUIVO VAZIO");
+			EscrMsg((char*)"ERRO NAO ENCONTRADO!");
 		else {
 			LimpaTela();
 			gotoxy(6,6);

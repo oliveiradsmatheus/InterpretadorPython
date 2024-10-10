@@ -1,4 +1,3 @@
-//DECLARAÇÃO LISTAGEN PARA CALCULOS
 union tpInfo {
 	char operador[3];
 	float valor;
@@ -6,7 +5,7 @@ union tpInfo {
 };
 
 struct listagenC {
-	char terminal;//'V' = valor | 'O' = operador | 'F' = função
+	char terminal; // 'V' = valor | 'O' = operador | 'F' = função
 	union tpInfo info;
 	struct listagenC *cabeca,*cauda;
 };
@@ -17,8 +16,6 @@ struct tpTermo {
 	struct tpTermo *prox;
 };
 typedef struct tpTermo Termo;
-
-//-----------------------------------------------------------
 
 ListaGenC * criaNo(char termo[20]) {
 	ListaGenC *NC = (ListaGenC*)malloc(sizeof(ListaGenC));
@@ -39,9 +36,7 @@ ListaGenC * criaNo(char termo[20]) {
 	return NC;
 }
 
-
-//DEFINICAO PILHA PARA LISTAGEN CALCULOS
-
+// Pilha de Lista Generalizada
 struct tpPilhaC {
 	ListaGenC *valor;
 	struct tpPilhaC *prox;
@@ -76,10 +71,8 @@ void topoPC(PilhaC *P, ListaGenC **V) {
 	else
 		*V=NULL;
 }
-//---------------------------------------------------------
 
-
-//DEFINICAO FILA PARA LISTAGEN CALCULOS
+// Fila de Lista Generalizada
 struct tpFilaC {
 	struct tpFilaC *prox;
 	ListaGenC *valor;
@@ -120,9 +113,8 @@ void topoFC (FilaC *F,ListaGenC **V) {
 	else
 		*V=NULL;
 }
-//---------------------------------------------------------
 
-//DEFINICAO PILHA DE FLOAT
+// Pilha de Float
 struct tpPilhaI {
 	int valor;
 	struct tpPilhaI *prox;
@@ -155,8 +147,8 @@ void topoPI(PilhaI *P, float *V) {
 	if(!isEmptyPI(P))
 		*V=P->valor;
 }
-//-----------------------
-//DEFINICAO PILHA DE CHAR
+
+// Pilha de Caracteres
 struct tpPilhaCH {
 	char valor[2];
 	struct tpPilhaCH *prox;
@@ -189,9 +181,8 @@ void topoPCH(PilhaCH *P, char *V) {
 	if(!isEmptyPCH(P))
 		strcpy(V,P->valor);
 }
-//-----------------------
 
-Termo * separa(char * expressao) {
+Termo *separa(char * expressao) {
 	Termo *T=NULL,*NC,*aux=NULL;
 	char auxC[100];
 	int i,j;
@@ -227,7 +218,6 @@ Termo * separa(char * expressao) {
 			aux=aux->prox;
 		}
 	}
-
 	return T;
 }
 
@@ -290,14 +280,12 @@ float calcula(ListaGenC *L) {
 
 					}
 				}
-
 				pushPCH(&PCH,L->info.operador);
 
-			} else { //Resolver retorno de função
+			} else { // Resolver retorno de função
 
 			}
 		}
-
 		L=L->cauda;
 		free(ex);
 	}
@@ -348,7 +336,6 @@ float resolveExpressao (char expressao[100]) {
 	}
 	pushPC(&P,L);
 	enqueueFC(&F,L);
-
 	while(!isEmptyFC(F)) {
 		dequeueFC(&F,&atual);
 		while(atual!=NULL) {
@@ -359,7 +346,6 @@ float resolveExpressao (char expressao[100]) {
 			atual=atual->cauda;
 		}
 	}
-
 	while(!isEmptyPC(P)) {
 		popPC(&P,&atual);
 		if(atual!=L) {

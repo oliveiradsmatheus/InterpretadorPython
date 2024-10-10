@@ -25,7 +25,6 @@ void CriaTokens(Token **pTokens, char string[100]) {
 			aux[j++] = string[i++];
 		}
 		aux[j] = '\0';
-
 		if (j > 0)
 			if (*pTokens == NULL) {
 				*pTokens = (Token *) malloc(sizeof(Token));
@@ -40,7 +39,6 @@ void CriaTokens(Token **pTokens, char string[100]) {
 				strcpy(fim->prox->NomeToken, aux);
 				fim = fim->prox;
 			}
-
 		if (string[i] != ' ' && string[i] != ',' && string[i] != ':' && string[i] != '\0' && i < strlen(string)) {
 			aux[0] = string[i];
 			aux[1] = '\0';
@@ -74,12 +72,11 @@ void CriaListaTokens(FILE *arq, Lista **L) {
 				i++;
 			}
 			if (idenAnt > idenAtu) {
-				if(idenAtu != 0 || (idenAtu==0 && !def))
+				if(idenAtu || (!idenAtu && !def))
 					func = (idenAnt-idenAtu)/3;
-				else
-					if(idenAtu==0 && idenAnt>3)
-						func = (idenAnt-idenAtu)/3 - 1; // Menos um porque o último é o fimdef
-					
+				else if(!idenAtu && idenAnt>3)
+					func = (idenAnt-idenAtu)/3 - 1; // Menos um porque o último é o fimdef
+
 				while(func) {
 					Nova = (Lista*)malloc(sizeof(Lista));
 					Nova->prox = NULL;
@@ -138,10 +135,9 @@ void exibe(Lista *l) {
 	Token *p;
 
 	if(!l) {
-		printf("lista vazia");
+		EscrMsg("LISTA VAZIA");
 		getch();
 	}
-
 	while (l != NULL) {
 		printf("%d ", i);
 		p = l->pToken;
