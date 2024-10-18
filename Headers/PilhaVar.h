@@ -69,7 +69,7 @@ void CriaVariavel (Token *Tok, Pilha **pVar) {
 				T = T->prox;
 			}
 			P->conteudo.val.flag = 1;
-			P->conteudo.val.variavel.fl = resolveExpressao(expressao);
+			P->conteudo.val.variavel.fl = ResolveExpressao(expressao);
 		} else {
 			P->conteudo.val.flag = 4;
 			strcpy(string,"");
@@ -106,7 +106,7 @@ void AtribuiValor (Token *Tok, Pilha **pVar) {
 		P = P->prox;
 
 	if(Tok->prox && !strcmp(Tok->prox->NomeToken,"="))
-		if((Tok->prox->prox->NomeToken[0] >= '0' && Tok->prox->prox->NomeToken[0] <= '9') || (SeVariavel(Tok->prox->prox->NomeToken,*pVar))) {
+		if((Tok->prox->prox->NomeToken[0] >= '0' && Tok->prox->prox->NomeToken[0] <= '9') || (SeVariavel(Tok,*pVar))) {
 			T = Tok->prox->prox;
 			while(T) {
 				if(SeVariavel(T,*pVar)) { //RESOLVER
@@ -118,7 +118,7 @@ void AtribuiValor (Token *Tok, Pilha **pVar) {
 				T = T->prox;
 			}
 			P->conteudo.val.flag = 1;
-			P->conteudo.val.variavel.fl = resolveExpressao(expressao);
+			P->conteudo.val.variavel.fl = ResolveExpressao(expressao);
 		} else {
 			P->conteudo.val.flag = 4;
 			strcpy(string,"");

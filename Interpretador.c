@@ -11,8 +11,6 @@
 #include "Headers\\PilhaVar.h"
 #include "Headers\\Funcoes.h"
 
-/// RESOLVER RESOLVE EXPRESSÃO
-
 void ExibirPrograma(Lista *L, int LinhaAtual) {
 	int l=10, c=6;
 

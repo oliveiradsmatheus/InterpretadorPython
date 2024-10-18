@@ -19,7 +19,7 @@ typedef struct tpTermo Termo;
 
 ListaGenC * criaNo(char termo[20]) {
 	ListaGenC *NC = (ListaGenC*)malloc(sizeof(ListaGenC));
-	
+
 	NC->cauda=NC->cabeca=NULL;
 	if(termo[0]=='+'||termo[0]=='-'||termo[0]=='/'||termo[0]=='*') {
 		NC->terminal='O';
@@ -27,7 +27,7 @@ ListaGenC * criaNo(char termo[20]) {
 	} else {
 		if(termo[0]>=48 && termo[0]<=57) {
 			NC->terminal='V';
-			NC->info.valor=atoi(termo);
+			NC->info.valor = atof(termo);
 		} else {
 			NC->terminal='F';
 			strcpy(NC->info.funcao,termo);
@@ -186,7 +186,7 @@ void topoPCH(PilhaCH *P, char *V) {
 Termo *Separa(char *expressao) {
 	Termo *T=NULL,*NC, *aux=NULL;
 	char auxC[100];
-	int i, j, k, l, iAnt;
+	int i, j, k, iAnt;
 
 	for(i=0; i<strlen(expressao); i++) {
 		NC=(Termo *)malloc(sizeof(Termo));
@@ -197,15 +197,17 @@ Termo *Separa(char *expressao) {
 		} else {
 			if(expressao[i]>=48 && expressao[i]<=57) {
 				NC->termo[0] = expressao[i];
-				if(expressao[1] == '.') {
+				if(expressao[i+1] == '.') {
 					NC->termo[1] = expressao[i+1];
-					l = k = 2;
-					while(k<8 && (expressao[k] >= 48 && expressao[k] <= 57)) {
-						NC->termo[l] = expressao[k];
-						l++;
+					k = 2;
+					i+=2;
+					while(i<strlen(expressao)-1 && (expressao[i] >= 48 && expressao[i] <= 57)) {
+						NC->termo[k] = expressao[i];
+						i++;
 						k++;
 					}
-					NC->termo[l]='\0';
+					i--;
+					NC->termo[k]='\0';
 				} else
 					NC->termo[1]='\0';
 			} else {
@@ -261,7 +263,7 @@ float calc(float v1,float v2,char *o) {
 	}
 }
 
-float calcula(ListaGenC *L) {
+float Calcula(ListaGenC *L) {
 	ListaGenC *ex;
 	PilhaI *PI;
 	PilhaCH *PCH;
@@ -284,7 +286,7 @@ float calcula(ListaGenC *L) {
 						popPCH(&PCH,aux);
 						pushPI(&PI,calc(v1,v2,aux));
 					} else {
-						if((strcmp(L->info.operador,"-")==0||strcmp(L->info.operador,"+")==0) && (strcmp(aux,"*")==0 || strcmp(aux,"/")==0)) {
+						if((!strcmp(L->info.operador,"-") || !strcmp(L->info.operador,"+")) && (!strcmp(aux,"*") || !strcmp(aux,"/"))) {
 							popPI(&PI,&v1);
 							popPI(&PI,&v2);
 							popPCH(&PCH,aux);
@@ -313,16 +315,16 @@ float calcula(ListaGenC *L) {
 	return v1;
 }
 
-float resolveExpressao (char expressao[100]) {
+float ResolveExpressao (char expressao[100]) {
 	ListaGenC *L = NULL, *atual;
 	PilhaC *P;
 	FilaC *F;
 	Termo *lista = Separa(expressao);
-	float resultado=0;	
-	
+	float resultado=0;
+
 	initPC(&P);
 	initFC(&F);
-	
+
 	while(lista) {
 		if(!L) {
 			L = atual = criaNo(lista->termo);
@@ -363,9 +365,9 @@ float resolveExpressao (char expressao[100]) {
 	while(!isEmptyPC(P)) {
 		popPC(&P,&atual);
 		if(atual!=L) {
-			atual->info.valor = calcula(atual->cabeca);
+			atual->info.valor = Calcula(atual->cabeca);
 		} else
-			resultado = calcula(atual);
+			resultado = Calcula(atual);
 	}
 	destroiLista(&lista);
 	return resultado;
