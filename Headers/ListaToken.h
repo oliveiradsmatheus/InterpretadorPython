@@ -22,9 +22,11 @@ void CriaTokens(Token **pTokens, char string[100]) {
 		while (string[i] != '+' && string[i]!='>' && string[i]!='<' && string[i] != '-' && string[i] != '*' && string[i] != '/' && string[i] != ' ' &&
 		        string[i] != '=' && string[i] != ':' && string[i] != '(' && string[i] != ')' && string[i] != ',' &&
 		        i < strlen(string) && string[i] != 39 && string[i] != '"') {
-			aux[j++] = string[i++];
+		    aux[j++] = string[i++];
 		}
 		aux[j] = '\0';
+		if(aux[strlen(aux)-1] == '\n')
+			aux[strlen(aux)-1] = '\0';
 		if (j > 0)
 			if (*pTokens == NULL) {
 				*pTokens = (Token *) malloc(sizeof(Token));

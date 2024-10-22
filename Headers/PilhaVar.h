@@ -24,16 +24,15 @@ struct pilha {
 };
 typedef struct pilha Pilha;
 
-void NCVar(char nome[45], Pilha **P) {
-	Pilha *aux = (Pilha*)malloc(sizeof(Pilha));
+Pilha *NCVar(char nome[45]) {
+	Pilha *Nova = (Pilha*)malloc(sizeof(Pilha));
 
-	aux->prox = *P;
-	aux->ant = NULL;
-	strcpy(aux->conteudo.nomeVar,nome);
-	aux->conteudo.val.flag = 6; // Deixando a variável com tipo indefinido
-	if(*P)
-		(*P)->ant = aux;
-	*P = aux;
+	Nova->prox = NULL;
+	Nova->ant = NULL;
+	strcpy(Nova->conteudo.nomeVar,nome);
+	Nova->conteudo.val.flag = 6; // Deixando a variável com tipo indefinido
+
+	return Nova;
 }
 
 Valor BuscaVariavel (Token *Var, Pilha *Pilha) {
@@ -42,7 +41,7 @@ Valor BuscaVariavel (Token *Var, Pilha *Pilha) {
 	char flag = 0;
 
 	while(Pilha && !flag) {
-		if(!strcmp(Var->NomeToken,Pilha->conteudo.nomeVar)) {
+		if(!strcmp(Var->NomeToken, Pilha->conteudo.nomeVar)) {
 			ValorVar = Pilha->conteudo.val;
 			flag = 1;
 		}
@@ -51,46 +50,59 @@ Valor BuscaVariavel (Token *Var, Pilha *Pilha) {
 	return ValorVar;
 }
 
-void CriaVariavel (Token *Tok, Pilha **pVar) {
-	Pilha *P;
-	Token *T;
-	char expressao[100], string[100], flag = 0;
-
-	expressao[0]='\0';
-	NCVar(Tok->NomeToken,&(*pVar));
-
-	P = *pVar;
-
-	if(Tok->prox && !strcmp(Tok->prox->NomeToken,"="))
-		if(Tok->prox->prox->NomeToken[0] >= '0' && Tok->prox->prox->NomeToken[0] <= '9') {
-			T = Tok->prox->prox;
-			while(T) {
-				strcat(expressao,T->NomeToken);
-				T = T->prox;
-			}
-			P->conteudo.val.flag = 1;
-			P->conteudo.val.variavel.fl = ResolveExpressao(expressao);
-		} else {
-			P->conteudo.val.flag = 4;
-			strcpy(string,"");
-			Tok = Tok->prox->prox->prox;
-			strcat(string,Tok->NomeToken);
-			Tok = Tok->prox;
-			while(Tok && (Tok->NomeToken[0] != 39 && Tok->NomeToken[0] != 34)) {
-				strcat(string," ");
-				strcat(string,Tok->NomeToken);
-				Tok = Tok->prox;
-			}
-			strcpy(P->conteudo.val.variavel.str,string);
-		}
-}
-
-char SeVariavel (Token *T, Pilha *PilhaVar) {
-	while(PilhaVar && strcmp(T->NomeToken,PilhaVar->conteudo.nomeVar))
+char SeVariavel (char *NomeVar, Pilha *PilhaVar) {
+	while(PilhaVar && strcmp(NomeVar,PilhaVar->conteudo.nomeVar))
 		PilhaVar = PilhaVar->prox;
 	if(PilhaVar)
 		return 1;
 	return 0;
+}
+
+void CriaVariavel (Token *Tok, Pilha **pVar) {
+	Pilha *NovaVar, *aux;
+	Token *T;
+	Valor V;
+	char expressao[100] ="", string[100], valor[100];
+
+	NovaVar = NCVar(Tok->NomeToken);
+
+	if(Tok->prox && !strcmp(Tok->prox->NomeToken,"="))
+		T = Tok->prox->prox;
+	if((T->NomeToken[0] >= '0' && T->NomeToken[0] <= '9') || (SeVariavel(T->NomeToken,*pVar))) {
+		while(T) {
+			if(SeVariavel(T->NomeToken,*pVar)) {
+				V = BuscaVariavel(T,*pVar);
+				sprintf(valor,"%f",V.variavel.fl);
+				strcat(expressao,valor);
+			} else
+				strcat(expressao,T->NomeToken);
+			T = T->prox;
+		}
+		NovaVar->conteudo.val.flag = 1;
+		NovaVar->conteudo.val.variavel.fl = ResolveExpressao(expressao);
+	} else {
+		NovaVar->conteudo.val.flag = 4;
+		strcpy(string,"");
+		Tok = Tok->prox->prox;
+		strcat(string,Tok->NomeToken);
+		Tok = Tok->prox;
+		while(Tok && (Tok->NomeToken[0] != 39 && Tok->NomeToken[0] != 34)) {
+			strcat(string," ");
+			strcat(string,Tok->NomeToken);
+			Tok = Tok->prox;
+		}
+		strcpy(NovaVar->conteudo.val.variavel.str,string);
+	}
+
+	if(!(*pVar))
+		*pVar = NovaVar;
+	else {
+		aux = *pVar;
+		while(aux->prox)
+			aux = aux->prox;
+		NovaVar->ant = aux;
+		aux->prox = NovaVar;
+	}
 }
 
 void AtribuiValor (Token *Tok, Pilha **pVar) {
@@ -101,35 +113,33 @@ void AtribuiValor (Token *Tok, Pilha **pVar) {
 
 	expressao[0]='\0';
 	P = *pVar;
-
 	while(P && strcmp(P->conteudo.nomeVar,Tok->NomeToken))
 		P = P->prox;
-
 	if(Tok->prox && !strcmp(Tok->prox->NomeToken,"="))
-		if((Tok->prox->prox->NomeToken[0] >= '0' && Tok->prox->prox->NomeToken[0] <= '9') || (SeVariavel(Tok,*pVar))) {
-			T = Tok->prox->prox;
-			while(T) {
-				if(SeVariavel(T,*pVar)) { //RESOLVER
-					V = BuscaVariavel(T,*pVar);
-					sprintf(valor,"%f",V.variavel.fl);
-					strcat(expressao,valor);
-				} else
-					strcat(expressao,T->NomeToken);
-				T = T->prox;
-			}
-			P->conteudo.val.flag = 1;
-			P->conteudo.val.variavel.fl = ResolveExpressao(expressao);
-		} else {
-			P->conteudo.val.flag = 4;
-			strcpy(string,"");
-			Tok = Tok->prox->prox->prox;
+		T = Tok->prox->prox;
+	if((T->NomeToken[0] >= '0' && T->NomeToken[0] <= '9') || (SeVariavel(T->NomeToken,*pVar))) {
+		while(T) {
+			if(SeVariavel(T->NomeToken,*pVar)) {
+				V = BuscaVariavel(T,*pVar);
+				sprintf(valor,"%f",V.variavel.fl);
+				strcat(expressao,valor);
+			} else
+				strcat(expressao,T->NomeToken);
+			T = T->prox;
+		}
+		P->conteudo.val.flag = 1;
+		P->conteudo.val.variavel.fl = ResolveExpressao(expressao);
+	} else {
+		P->conteudo.val.flag = 4;
+		strcpy(string,"");
+		Tok = Tok->prox->prox;
+		strcat(string,Tok->NomeToken);
+		Tok = Tok->prox;
+		while(Tok && (Tok->NomeToken[0] != 39 && Tok->NomeToken[0] != 34)) {
+			strcat(string," ");
 			strcat(string,Tok->NomeToken);
 			Tok = Tok->prox;
-			while(Tok && (Tok->NomeToken[0] != 39 && Tok->NomeToken[0] != 34)) {
-				strcat(string," ");
-				strcat(string,Tok->NomeToken);
-				Tok = Tok->prox;
-			}
-			strcpy(P->conteudo.val.variavel.str,string);
 		}
+		strcpy(P->conteudo.val.variavel.str,string);
+	}
 }

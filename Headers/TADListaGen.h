@@ -198,10 +198,12 @@ Termo *Separa(char *expressao) {
 			if(expressao[i]>=48 && expressao[i]<=57) {
 				NC->termo[0] = expressao[i];
 				if(expressao[i+1] == '.') {
-					NC->termo[1] = expressao[i+1];
+					NC->termo[1] = '.';
 					k = 2;
-					i+=2;
-					while(i<strlen(expressao)-1 && (expressao[i] >= 48 && expressao[i] <= 57)) {
+					i += 2;
+					printf("");
+					getch();
+					while(i<strlen(expressao) && (expressao[i] >= 48 && expressao[i] <= 57)) {
 						NC->termo[k] = expressao[i];
 						i++;
 						k++;
@@ -235,7 +237,7 @@ Termo *Separa(char *expressao) {
 	return T;
 }
 
-void destroiLista(Termo **L) {
+void DestroiListaTermo(Termo **L) {
 	Termo *aux;
 	while(*L!=NULL) {
 		aux=*L;
@@ -369,6 +371,6 @@ float ResolveExpressao (char expressao[100]) {
 		} else
 			resultado = Calcula(atual);
 	}
-	destroiLista(&lista);
+	DestroiListaTermo(&lista);
 	return resultado;
 }
