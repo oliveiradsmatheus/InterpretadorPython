@@ -52,25 +52,6 @@ void ConteudoArquivo(Lista *L) {
 	}
 }
 
-// Algoritmo recursivo para destruir os tokens
-void DestroiLinha(Token **Token) {
-	if(*Token) {
-		DestroiLinha(&(*Token)->prox);
-		free(*Token);
-		*Token = NULL;
-	}
-}
-
-// Algoritmo recursivo para destruir os elementos da lista
-void DestroiLista(Lista **L) {
-	if(*L) {
-		DestroiLinha(&(*L)->pToken);
-		DestroiLista(&(*L)->prox);
-		free(*L);
-		*L = NULL;
-	}
-}
-
 void PonteiroInicial (Lista **L, int *LinhaAtual) {
 	while(*L && !strcmp((*L)->pToken->NomeToken,"def"))
 		while(strcmp((*L)->pToken->NomeToken,"fimdef")) {
@@ -181,55 +162,6 @@ void ResolveElse (Lista **L, int *LinhaAtual, char *repeticao) {
 		*L = (*L)->prox;
 }
 
-void ResolveElif (Lista **L, Pilha *PilhaVar, char *condicao, int *LinhaAtual) {
-	if(ComparaIf((*L)->pToken,PilhaVar)) {
-		*condicao = 1;
-		*L = (*L)->prox;
-		(*LinhaAtual)++;
-	} else {
-		while(*L && strcmp((*L)->pToken->NomeToken,"fim")) {
-			*L = (*L)->prox;
-			(*LinhaAtual)++;
-		}
-		if(!strcmp((*L)->pToken->NomeToken,"fim")) {
-			*L = (*L)->prox;
-			if(!strcmp((*L)->pToken->NomeToken,"elif"))
-				ResolveElif(&(*L),PilhaVar,&(*condicao),&(*LinhaAtual));
-			else {
-				if(!strcmp((*L)->pToken->NomeToken,"else")) {
-					*condicao = 0;
-					*L = (*L)->prox;
-					(*LinhaAtual)++;
-				}
-			}
-		}
-	}
-}
-
-void ResolveIf (Lista **L, Pilha *PilhaVar, char *condicao, Lista *Linhas, int *LinhaAtual) {
-	if(ComparaIf((*L)->pToken,PilhaVar)) {
-		*L = (*L)->prox;
-		(*LinhaAtual)++;
-	} else {
-		while(*L && strcmp((*L)->pToken->NomeToken,"fim")) {
-			*L = (*L)->prox;
-			(*LinhaAtual)++;
-		}
-		if(!strcmp((*L)->pToken->NomeToken,"fim")) {
-			*L = (*L)->prox;
-			if(!strcmp((*L)->pToken->NomeToken,"elif"))
-				ResolveElif(&(*L),PilhaVar,&(*condicao),&(*LinhaAtual));
-			else {
-				if(!strcmp((*L)->pToken->NomeToken,"else")) {
-					*condicao = 0;
-					*L = (*L)->prox;
-					(*LinhaAtual)++;
-				}
-			}
-		}
-	}
-}
-
 void PosicionaPont (Lista **L, int *LinhaAtual) {
 	if(!strcmp((*L)->pToken->NomeToken,"elif")) {
 		while((*L)->prox && strcmp((*L)->pToken->NomeToken,"fim")) {
@@ -249,7 +181,6 @@ void PosicionaPont (Lista **L, int *LinhaAtual) {
 			*L = (*L)->prox;
 	}
 }
-
 
 void ExecutaLinha(Lista **L, Pilha **pVar, Funcoes *Funcoes, Lista *Linhas, int Linha) {
 	Pilha *P = *pVar;

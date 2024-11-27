@@ -238,6 +238,7 @@ char ComparaIf(Token *T, Pilha *P) {
 // Funcão de teste de exibição de funções
 void exibirFuncoes (Funcoes *F) {
 	int c = 42, l = 12;
+	
 	while(F) {
 		gotoxy(c,l);
 		printf("%s",F->nome);
@@ -352,6 +353,55 @@ void ExibirPrint(Token *token, Pilha *pilhaVar) {
 			gotoxy(22,14);
 			printf("%s",string);
 			textcolor(15);
+		}
+	}
+}
+
+void ResolveElif (Lista **L, Pilha *PilhaVar, char *condicao, int *LinhaAtual) {
+	if(ComparaIf((*L)->pToken,PilhaVar)) {
+		*condicao = 1;
+		*L = (*L)->prox;
+		(*LinhaAtual)++;
+	} else {
+		while(*L && strcmp((*L)->pToken->NomeToken,"fim")) {
+			*L = (*L)->prox;
+			(*LinhaAtual)++;
+		}
+		if(!strcmp((*L)->pToken->NomeToken,"fim")) {
+			*L = (*L)->prox;
+			if(!strcmp((*L)->pToken->NomeToken,"elif"))
+				ResolveElif(&(*L),PilhaVar,&(*condicao),&(*LinhaAtual));
+			else {
+				if(!strcmp((*L)->pToken->NomeToken,"else")) {
+					*condicao = 0;
+					*L = (*L)->prox;
+					(*LinhaAtual)++;
+				}
+			}
+		}
+	}
+}
+
+void ResolveIf (Lista **L, Pilha *PilhaVar, char *condicao, Lista *Linhas, int *LinhaAtual) {
+	if(ComparaIf((*L)->pToken,PilhaVar)) {
+		*L = (*L)->prox;
+		(*LinhaAtual)++;
+	} else {
+		while(*L && strcmp((*L)->pToken->NomeToken,"fim")) {
+			*L = (*L)->prox;
+			(*LinhaAtual)++;
+		}
+		if(!strcmp((*L)->pToken->NomeToken,"fim")) {
+			*L = (*L)->prox;
+			if(!strcmp((*L)->pToken->NomeToken,"elif"))
+				ResolveElif(&(*L),PilhaVar,&(*condicao),&(*LinhaAtual));
+			else {
+				if(!strcmp((*L)->pToken->NomeToken,"else")) {
+					*condicao = 0;
+					*L = (*L)->prox;
+					(*LinhaAtual)++;
+				}
+			}
 		}
 	}
 }

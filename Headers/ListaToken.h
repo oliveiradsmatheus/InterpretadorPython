@@ -22,7 +22,7 @@ void CriaTokens(Token **pTokens, char string[100]) {
 		while (string[i] != '+' && string[i]!='>' && string[i]!='<' && string[i] != '-' && string[i] != '*' && string[i] != '/' && string[i] != ' ' &&
 		        string[i] != '=' && string[i] != ':' && string[i] != '(' && string[i] != ')' && string[i] != ',' &&
 		        i < strlen(string) && string[i] != 39 && string[i] != '"') {
-		    aux[j++] = string[i++];
+			aux[j++] = string[i++];
 		}
 		aux[j] = '\0';
 		if(aux[strlen(aux)-1] == '\n')
@@ -78,7 +78,7 @@ void CriaListaTokens(FILE *arq, Lista **L) {
 					func = (idenAnt-idenAtu)/4;
 				else if(!idenAtu && idenAnt>4)
 					func = (idenAnt-idenAtu)/4 - 1; // Menos um porque o último é o fimdef
-					
+
 				while(func) {
 					Nova = (Lista*)malloc(sizeof(Lista));
 					Nova->prox = NULL;
@@ -156,7 +156,7 @@ void exibe(Lista *l) {
 		EscrMsg("LISTA VAZIA");
 		getch();
 	}
-	while (l != NULL) {
+	while (l) {
 		printf("%d ", i);
 		p = l->pToken;
 		j = 1;
@@ -167,5 +167,24 @@ void exibe(Lista *l) {
 		i++;
 		printf("\n\n");
 		l = l->prox;
+	}
+}
+
+// Algoritmo recursivo para destruir os tokens
+void DestroiLinha(Token **Token) {
+	if(*Token) {
+		DestroiLinha(&(*Token)->prox);
+		free(*Token);
+		*Token = NULL;
+	}
+}
+
+// Algoritmo recursivo para destruir os elementos da lista
+void DestroiLista(Lista **L) {
+	if(*L) {
+		DestroiLinha(&(*L)->pToken);
+		DestroiLista(&(*L)->prox);
+		free(*L);
+		*L = NULL;
 	}
 }

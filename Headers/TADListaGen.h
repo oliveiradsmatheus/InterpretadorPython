@@ -20,16 +20,16 @@ typedef struct tpTermo Termo;
 ListaGenC * criaNo(char termo[20]) {
 	ListaGenC *NC = (ListaGenC*)malloc(sizeof(ListaGenC));
 
-	NC->cauda=NC->cabeca=NULL;
-	if(termo[0]=='+'||termo[0]=='-'||termo[0]=='/'||termo[0]=='*') {
-		NC->terminal='O';
+	NC->cauda = NC->cabeca = NULL;
+	if(termo[0] == '+' || termo[0] == '-' || termo[0] == '/' || termo[0] == '*') {
+		NC->terminal = 'O';
 		strcpy(NC->info.operador,termo);
 	} else {
-		if(termo[0]>=48 && termo[0]<=57) {
-			NC->terminal='V';
+		if(termo[0] >= 48 && termo[0] <= 57) {
+			NC->terminal = 'V';
 			NC->info.valor = atof(termo);
 		} else {
-			NC->terminal='F';
+			NC->terminal = 'F';
 			strcpy(NC->info.funcao,termo);
 		}
 	}
@@ -44,32 +44,34 @@ struct tpPilhaC {
 typedef struct tpPilhaC PilhaC;
 
 void initPC(PilhaC ** P) {
-	*P=NULL;
+	*P = NULL;
 }
 
 void pushPC(PilhaC **P, ListaGenC *V) {
 	PilhaC *nova = (PilhaC *)malloc(sizeof(PilhaC));
-	nova->valor=V;
-	nova->prox=*P;
-	*P=nova;
+
+	nova->valor = V;
+	nova->prox = *P;
+	*P = nova;
 }
 
 void popPC (PilhaC **P,ListaGenC **V) {
 	PilhaC *aux = *P;
-	*P=(*P)->prox;
-	*V=aux->valor;
+
+	*P = (*P)->prox;
+	*V = aux->valor;
 	free(aux);
 }
 
 char isEmptyPC(PilhaC *P) {
-	return P==NULL;
+	return P == NULL;
 }
 
 void topoPC(PilhaC *P, ListaGenC **V) {
 	if(!isEmptyPC(P))
-		*V=P->valor;
+		*V = P->valor;
 	else
-		*V=NULL;
+		*V = NULL;
 }
 
 // Fila de Lista Generalizada
@@ -80,39 +82,41 @@ struct tpFilaC {
 typedef struct tpFilaC FilaC;
 
 void initFC(FilaC ** F) {
-	*F=NULL;
+	*F = NULL;
 }
 
 void enqueueFC(FilaC **F,ListaGenC *V) {
 	FilaC *NC = (FilaC *)malloc(sizeof(FilaC));
 	FilaC *aux = *F;
-	NC->valor =V;
-	NC->prox =NULL;
-	if(*F==NULL)
-		*F=NC;
+
+	NC->valor = V;
+	NC->prox = NULL;
+	if(!(*F))
+		*F = NC;
 	else {
-		while(aux->prox!=NULL)
-			aux=aux->prox;
-		aux->prox=NC;
+		while(aux->prox)
+			aux = aux->prox;
+		aux->prox = NC;
 	}
 }
 
 void dequeueFC (FilaC **F, ListaGenC **V) {
 	FilaC *aux = *F;
-	*F=(*F)->prox;
-	*V=aux->valor;
+
+	*F = (*F)->prox;
+	*V = aux->valor;
 	free(aux);
 }
 
 char isEmptyFC (FilaC *F) {
-	return F==NULL;
+	return F == NULL;
 }
 
 void topoFC (FilaC *F,ListaGenC **V) {
 	if(!isEmptyFC(F))
-		*V=F->valor;
+		*V = F->valor;
 	else
-		*V=NULL;
+		*V = NULL;
 }
 
 // Pilha de Float
@@ -123,30 +127,31 @@ struct tpPilhaI {
 typedef struct tpPilhaI PilhaI;
 
 void initPI(PilhaI ** P) {
-	*P=NULL;
+	*P = NULL;
 }
 
 void pushPI(PilhaI **P, float V) {
 	PilhaI *nova = (PilhaI *)malloc(sizeof(PilhaI));
-	nova->valor=V;
-	nova->prox=*P;
-	*P=nova;
+
+	nova->valor = V;
+	nova->prox = *P;
+	*P = nova;
 }
 
 void popPI (PilhaI **P,float *V) {
 	PilhaI *aux = *P;
-	*P=(*P)->prox;
-	*V=aux->valor;
+	*P = (*P)->prox;
+	*V = aux->valor;
 	free(aux);
 }
 
 char isEmptyPI(PilhaI *P) {
-	return P==NULL;
+	return P == NULL;
 }
 
 void topoPI(PilhaI *P, float *V) {
 	if(!isEmptyPI(P))
-		*V=P->valor;
+		*V = P->valor;
 }
 
 // Pilha de Caracteres
@@ -157,18 +162,20 @@ struct tpPilhaCH {
 typedef struct tpPilhaCH PilhaCH;
 
 void initPCH(PilhaCH ** P) {
-	*P=NULL;
+	*P = NULL;
 }
 
 void pushPCH(PilhaCH **P, char *V) {
 	PilhaCH *nova = (PilhaCH *)malloc(sizeof(PilhaCH));
+
 	strcpy(nova->valor,V);
-	nova->prox=*P;
-	*P=nova;
+	nova->prox = *P;
+	*P = nova;
 }
 
 void popPCH (PilhaCH **P,char *V) {
 	PilhaCH *aux = *P;
+
 	strcpy(V,(*P)->valor);
 	*P=(*P)->prox;
 	free(aux);
@@ -201,8 +208,6 @@ Termo *Separa(char *expressao) {
 					NC->termo[1] = '.';
 					k = 2;
 					i += 2;
-					printf("");
-					getch();
 					while(i<strlen(expressao) && (expressao[i] >= 48 && expressao[i] <= 57)) {
 						NC->termo[k] = expressao[i];
 						i++;
@@ -239,6 +244,7 @@ Termo *Separa(char *expressao) {
 
 void DestroiListaTermo(Termo **L) {
 	Termo *aux;
+
 	while(*L!=NULL) {
 		aux=*L;
 		*L=(*L)->prox;
@@ -248,6 +254,7 @@ void DestroiListaTermo(Termo **L) {
 
 float calc(float v1,float v2,char *o) {
 	char op;
+
 	if(strcmp(o,"**")==0)
 		return pow(v1,v2);
 	else {
@@ -352,6 +359,7 @@ float ResolveExpressao (char expressao[100]) {
 			}
 		}
 	}
+
 	pushPC(&P,L);
 	enqueueFC(&F,L);
 	while(!isEmptyFC(F)) {
@@ -364,6 +372,7 @@ float ResolveExpressao (char expressao[100]) {
 			atual=atual->cauda;
 		}
 	}
+
 	while(!isEmptyPC(P)) {
 		popPC(&P,&atual);
 		if(atual!=L) {
